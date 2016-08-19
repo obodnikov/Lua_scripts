@@ -16,16 +16,27 @@ srv:listen(80,function(conn)
                 _GET[k] = v
             end
         end
-        buf = buf.."<p align=\"center\"><font size=\"5\"><span style=\"font-family: \'Comic Sans MS\', cursive;\">Welcome to Mike&#39;s Sensor configuration</font></p>";
-        buf = buf.."<p align=\"center\"><font size=\"3\"><span style=\"font-family: \'Comic Sans MS\', cursive;\">List of Wifi networks, configured on chip</span></font></p>";
-        buf = buf.."<table align=\"left\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width: 100%\"><tbody>";
+
+
+        if (_GET.removeSSID ~= nil) then
+            print("Remove ssid" .. _GET.removeSSID)
+            for k,v in pairs(ssidList) do
+                if (k == _GET.removeSSID) then 
+                    ssidList[k] = nil 
+                end
+            end
+        end
+        
+        buf = buf.."<p align=\"center\"><font size=\"15\"><span style=\"font-family: \'Comic Sans MS\', cursive;\">Welcome to Mike&#39;s Sensor configuration</font></p>";
+        buf = buf.."<p align=\"center\"><font size=\"7\"><span style=\"font-family: \'Comic Sans MS\', cursive;\">List of Wifi networks, configured on chip</span></font></p>";
+        buf = buf.."<table align=\"left\" border=\"1\" cellpadding=\"1\" cellspacing=\"1\" style=\"width: 100%\"><tbody><font size=\"7\">";
  --       local _on,_off = "",""
  
         for ssidP,passwd in pairs(ssidList) do    
             buf = buf.."<tr><td>"..ssidP.."</td><td>"..passwd.."</td><td><a href=\"?removeSSID="..ssidP.."\"><button>Remove Network</button></a></tr>"
         end    
 
-        buf = buf.."</tbody></table><p>&nbsp;</p>"
+        buf = buf.."</font></tbody></table><p>&nbsp;</p>"
         
         client:send(buf);
         client:close();
@@ -59,3 +70,31 @@ function loadConfig(f)
                 return nil
         end
 end
+
+
+
+function saveConfig(f,t)
+
+        if file.exists(f) then
+ 
+                file.open(f, 'r')
+
+                local line = file.readline()
+                
+                while line do
+                        local key, value = string.match(line,'\"(.*)\"=\"(.*)\"')
+
+                        if key then 
+                            loaded[key] = value
+                        else
+                            print("Error in pair")
+                        end
+                        line = file.readline()
+                end
+                file.close()
+                return loaded
+        else
+                return nil
+        end
+end
+
